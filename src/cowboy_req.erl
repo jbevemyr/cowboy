@@ -129,6 +129,7 @@
 	peer := {inet:ip_address(), inet:port_number()},
 	sock := {inet:ip_address(), inet:port_number()},
 	cert := binary() | undefined,
+        status := cowboy:http_status(),
 
 	%% Private interface.
 	ref := ranch:ref(),
@@ -828,10 +829,10 @@ reply(Status, Headers, Body, Req)
 %% data around if we can avoid it.
 do_reply(Status, Headers, _, Req=#{method := <<"HEAD">>}) ->
 	cast({response, Status, response_headers(Headers, Req), <<>>}, Req),
-	done_replying(Req, true);
+	done_replying(Req#{status => Status}, true);
 do_reply(Status, Headers, Body, Req) ->
 	cast({response, Status, response_headers(Headers, Req), Body}, Req),
-	done_replying(Req, true).
+	done_replying(Req#{status => Status}, true).
 
 done_replying(Req, HasSentResp) ->
 	maps:without([resp_cookies, resp_headers, resp_body], Req#{has_sent_resp => HasSentResp}).
